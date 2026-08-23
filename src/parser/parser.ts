@@ -1,7 +1,6 @@
 import * as cheerio from "cheerio";
 import type { Element } from 'domhandler';
 import * as fs from "fs";
-import { recipeSchema } from "../schemas/zod_schema.js";
 export async function assignCheerio(docPath: string) {
     const html = fs.readFileSync(docPath, 'utf-8')
     const $ = cheerio.load(html);
@@ -21,16 +20,4 @@ export async function retrieveGraphTag(doc: cheerio.CheerioAPI) {
     const recipe = graphContainer["@graph"].find((node: any) =>
     Array.isArray(node["@type"]) ? node["@type"].includes("Recipe") : node["@type"] === "Recipe")
     return recipe;
-}
-
-const path = "../../dump.html";
-const cheerioOverHTML = await assignCheerio(path);
-const graphTags = await retrieveGraphTag(cheerioOverHTML);
-
-const recipe = recipeSchema.safeParse(graphTags);
-if (!recipe.success) {
-    console.log(recipe.error);
-} else {
-    console.log(recipe);
-    console.log(recipe.data.recipeInstructions)
 }
