@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import type { Element } from 'domhandler';
 import * as fs from "fs";
+import type { recipeSchemaType } from "../schemas/recipe_schema.js";
 export async function assignCheerio(docPath: string) {
     const html = fs.readFileSync(docPath, 'utf-8')
     const $ = cheerio.load(html);
@@ -20,4 +21,8 @@ export async function retrieveGraphTag(doc: cheerio.CheerioAPI) {
     const recipe = graphContainer["@graph"].find((node: any) =>
     Array.isArray(node["@type"]) ? node["@type"].includes("Recipe") : node["@type"] === "Recipe")
     return recipe;
+}
+
+export async function normalizeRecipe(recipe: recipeSchemaType) {
+
 }
