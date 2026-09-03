@@ -42,11 +42,12 @@ export const stepSchema = z.object({
 })
 
 export const normalizedRecipeSchema = z.object({
-    id: z.string,
+    id: z.string(),
     steps: z.array(stepSchema),
     totalDurationMinutes: z.string().optional(),
-    yield: z.number,
+    yield: z.union([z.number(), z.array(z.string()), z.string()]),
 })
 
 export type recipeSchemaType = z.infer<typeof recipeSchema>;
+export type stepsSchemaType = z.infer<typeof stepSchema>;
 export type normalizedRecipeSchemaType = z.infer<typeof normalizedRecipeSchema>;

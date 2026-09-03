@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import { assignCheerio, retrieveGraphTag } from "./parser/parser.js";
+import { assignCheerio, normalizeRecipe, retrieveGraphTag } from "./parser/parser.js";
 import { recipeSchema } from "./schemas/recipe_schema.js";
 import { scrapeRecipe } from "./scraper/scrape.js";
 
@@ -27,9 +27,11 @@ async function main() {
     if (!recipe.success) {
         console.log(recipe.error);
     } else {
-        console.log(recipe);
-        console.log(recipe.data.recipeInstructions);
+        const normalizedRecipe = normalizeRecipe(recipe.data, "0");
+        console.log(JSON.stringify(normalizedRecipe, null, 2));
+        // console.log(recipe.data.recipeInstructions);
     }
+    
 }
 
 await main();

@@ -46,7 +46,7 @@ export function normalizeRecipe(recipe: recipeSchemaType, recipeId: string): nor
     return normalizedRecipe;
 }
 
-function iso8601DurationToMinutes(duration: string): number {
+function iso8601DurationToMinutes(duration: string): string {
   const match = duration.match(/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/);
   if (!match) throw new Error(`Invalid ISO8601 duration: ${duration}`);
 
@@ -56,5 +56,5 @@ function iso8601DurationToMinutes(duration: string): number {
     Number(hours ?? 0) * 60 +
     Number(minutes ?? 0) +
     Number(seconds ?? 0) / 60
-  );
+  ).toString();
 }
