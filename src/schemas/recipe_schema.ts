@@ -18,10 +18,7 @@ const howToSectionSchema = z.object({
     itemListElement: z.array(howToStepSchema),
 })
 
-const recipeInstructions = z.union([
-    z.string(),
-    z.array(z.union([howToStepSchema, howToSectionSchema]))
-])
+export const recipeInstructions = z.array(z.union([howToStepSchema, howToSectionSchema]))
 
 export const recipeSchema = z.object({
     name: z.string(),
@@ -38,6 +35,7 @@ export const recipeSchema = z.object({
 
 export const stepSchema = z.object({
     id: z.number(),
+    text: z.string(),
     dependsOn: z.array(z.number()),
     station: z.enum(STATIONS).optional(),
     duration: z.string().optional().nullable(),
@@ -51,3 +49,4 @@ export const normalizedRecipeSchema = z.object({
 })
 
 export type recipeSchemaType = z.infer<typeof recipeSchema>;
+export type normalizedRecipeSchemaType = z.infer<typeof normalizedRecipeSchema>;
