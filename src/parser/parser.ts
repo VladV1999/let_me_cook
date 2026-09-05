@@ -1,7 +1,11 @@
 import * as cheerio from "cheerio";
 import type { Element } from 'domhandler';
 import * as fs from "fs";
-import { normalizedRecipeSchema, type normalizedRecipeSchemaType, type recipeSchemaType, stepSchema } from "../schemas/recipe_schema.js";
+import ollama from "ollama";
+
+import z from "zod";
+import { enrichmentSchema, normalizedRecipeSchema, STATIONS, stepSchema, type normalizedRecipeSchemaType, type recipeSchemaType } from "../schemas/recipe_schema.js";
+
 export async function assignCheerio(docPath: string) {
     const html = fs.readFileSync(docPath, 'utf-8')
     const $ = cheerio.load(html);
@@ -39,22 +43,52 @@ export function normalizeRecipe(recipe: recipeSchemaType, recipeId: string): nor
     const normalizedRecipe = normalizedRecipeSchema.parse({
         id: recipeId,
         steps: steps,
-        totalDurationMinutes: recipe.cookTime !== undefined ? 
-        iso8601DurationToMinutes(recipe.cookTime) : 0,
+        totalDurationSeconds: recipe.cookTime !== undefined ?
+        iso8601DurationToSeconds(recipe.cookTime) : 0,
         yield: recipe.recipeYield
     })
     return normalizedRecipe;
 }
 
-function iso8601DurationToMinutes(duration: string): string {
+export async function sanitizeNormalRecipe(normalizedRecipe: normalizedRecipeSchemaType) {
+    const model = 'qwen2.5:7b-instruct';
+    const ENRICHMENT_PROMPT = `For each step below, assign a station (${STATIONS.join(", ")}) and estimate its duration in seconds.
+
+Rules:
+- If the step states an explicit time, convert it to seconds exactly (e.g. "10 seconds" -> 10, "2 minutes" -> 120). Never round it down to 0.
+- If no time is stated, estimate a realistic duration from real-world cooking experience.
+- Every step takes some non-zero time. This includes Prep steps like chopping, tenderising, or mixing - physical prep work is not instantaneous just because it doesn't involve heat.
+- Only use a value near 0 for steps that are genuinely instantaneous with no physical action, like "serve" or "garnish and enjoy."
+
+Steps:
+${JSON.stringify(normalizedRecipe.steps.map(s => ({ id: s.id, text: s.text })))}`;
+    const response = await ollama.chat({
+        model: model,
+        messages: [{role: 'user', content: ENRICHMENT_PROMPT}],
+        format: z.toJSONSchema(enrichmentSchema)
+    })
+    const enrichment = enrichmentSchema.parse(JSON.parse(response.message.content));
+    const byId = new Map(enrichment.results.map(r => [r.id, r]));
+    const enriched = normalizedRecipe.steps.map(step => {
+        const result = byId.get(step.id);
+        return {
+            ...step,
+            station: result?.station ?? step.station,
+            durationSeconds: result?.durationSeconds ?? step.durationSeconds
+        }
+    })
+    return enriched;
+}
+
+function iso8601DurationToSeconds(duration: string): number {
   const match = duration.match(/^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/);
   if (!match) throw new Error(`Invalid ISO8601 duration: ${duration}`);
 
   const [, days, hours, minutes, seconds] = match;
   return (
-    Number(days ?? 0) * 24 * 60 +
-    Number(hours ?? 0) * 60 +
-    Number(minutes ?? 0) +
-    Number(seconds ?? 0) / 60
-  ).toString();
+    Number(days ?? 0) * 86400 +
+    Number(hours ?? 0) * 3600 +
+    Number(minutes ?? 0) * 60 +
+    Number(seconds ?? 0)
+  );
 }

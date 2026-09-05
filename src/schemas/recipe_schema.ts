@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-const STATIONS = ["Stove", 
+export const STATIONS = ["Stove", 
     "Oven", 
     "Microwave", 
     "Prep",] as const;
@@ -38,14 +38,22 @@ export const stepSchema = z.object({
     text: z.string(),
     dependsOn: z.array(z.number()),
     station: z.enum(STATIONS).optional(),
-    duration: z.string().optional().nullable(),
+    durationSeconds: z.number().optional().nullable(),
 })
 
 export const normalizedRecipeSchema = z.object({
     id: z.string(),
     steps: z.array(stepSchema),
-    totalDurationMinutes: z.string().optional(),
+    totalDurationSeconds: z.number().optional(),
     yield: z.union([z.number(), z.array(z.string()), z.string()]),
+})
+
+export const enrichmentSchema = z.object({
+    results: z.array(z.object({
+        id: z.number(),
+        station: z.enum(STATIONS).optional(),
+        durationSeconds: z.number().min(0).optional()
+    }))
 })
 
 export type recipeSchemaType = z.infer<typeof recipeSchema>;
