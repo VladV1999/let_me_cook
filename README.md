@@ -4,6 +4,12 @@ A backend pipeline that scrapes a recipe from the web, parses it into structured
 
 This is the data pipeline stage of a larger project: recipe scraping → normalization → LLM enrichment → dependency graph extraction. The scheduling algorithm (which consumes this output to compute an actual cook timeline) is the next stage, not yet included here.
 
+# Motivation
+
+I started this because I kept saying the phrase let me cook... and eventually got hungry... and that got me thinking,
+what is the fastest possible way to cook a number of dishes? My family used to cook a bunch of them by the multitude
+so I wanted to give this a shot! Though.. this is far from perfect, this is a good approximation of how long it should take!
+
 ## How it works
 
 1. **Scrape** — fetches the recipe page HTML from a given URL (currently targets [RecipeTinEats](https://www.recipetineats.com/)).
@@ -29,7 +35,10 @@ The result is a fully enriched recipe: every step annotated with its station, du
   ```
   Ollama must be running (`ollama serve`, or the desktop app) before running this project — the enrichment and dependency-extraction steps will fail without it.
 
-## Installation
+## Quick Start
+
+git clone https://github.com/VladV1999/let_me_cook
+cd let_me_cook
 
 ```bash
 npm install
@@ -82,3 +91,7 @@ The dependency-extraction model reliably catches *explicit* multi-ingredient mer
 ## Status
 
 This is a work-in-progress project (Boot.dev Backend Developer Certificate final project). Completed so far: scraping, parsing/normalization, and LLM-based enrichment + dependency-graph extraction. The scheduling algorithm (converting the dependency graph + durations into an actual cook timeline for a single cook, single dish) is the next stage of the project.
+
+### Contributing
+
+If you'd like to contribute or have some ideas, please fork the repository and open a pull request to the 'main' branch
