@@ -1,4 +1,5 @@
 import { parseArgs } from "node:util";
+import { printRecipeSummary } from "./formatter/formatter.js";
 import { assignCheerio, normalizeRecipe, retrieveGraphTag, sanitizeNormalRecipe } from "./parser/parser.js";
 import { recipeSchema } from "./schemas/recipe_schema.js";
 import { scrapeRecipe } from "./scraper/scrape.js";
@@ -30,8 +31,7 @@ async function main() {
         const normalizedRecipe = normalizeRecipe(recipe.data, "0");
         const enrichedRecipe = await sanitizeNormalRecipe(normalizedRecipe);
 
-        console.log(JSON.stringify(enrichedRecipe, null, 2));
-        // console.log(recipe.data.recipeInstructions);
+        printRecipeSummary(enrichedRecipe);
     }
     
 }

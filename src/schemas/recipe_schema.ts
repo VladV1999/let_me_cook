@@ -56,6 +56,13 @@ export const enrichmentSchema = z.object({
     }))
 })
 
+export const dependencyOverrideSchema = z.object({
+    results: z.array(z.object({
+        id: z.number(),
+        dependsOn: z.array(z.number())
+    }))
+});
+
 export type recipeSchemaType = z.infer<typeof recipeSchema>;
 export type stepsSchemaType = z.infer<typeof stepSchema>;
 export type normalizedRecipeSchemaType = z.infer<typeof normalizedRecipeSchema>;
